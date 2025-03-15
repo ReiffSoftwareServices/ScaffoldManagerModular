@@ -1,0 +1,20 @@
+[
+    {
+      "id": "G001",
+      "status": "angemeldet",
+      "bereich": "Halle A",
+      "anmeldedatum": "2024-02-15"
+    },
+    {
+      "id": "G002",
+      "status": "umgebaut",
+      "bereich": "Halle B",
+      "anmeldedatum": "2024-01-20"
+    },
+    {
+      "id": "G003",
+      "status": "abgemeldet",
+      "bereich": "Außenbereich",
+      "anmeldedatum": "2024-03-01"
+    }
+  ]

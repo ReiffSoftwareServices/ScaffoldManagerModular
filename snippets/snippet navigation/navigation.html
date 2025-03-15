@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vue.js Menu Navigation</title>
+    <script src="https://unpkg.com/vue@3.2.47/dist/vue.global.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        nav {
+            background-color: #4285F4;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        nav ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+        }
+        nav li {
+            margin-right: 20px;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            padding: 5px 10px;
+            border-radius: 3px;
+        }
+        nav a:hover {
+            background-color: #3367D6;
+        }
+        nav a.active {
+            background-color: #34A853;
+        }
+        .page-content {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 5px;
+            min-height: 300px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <nav>
+            <ul>
+                <li v-for="page in pages" :key="page.name">
+                    <a href="#" 
+                       @click.prevent="currentPage = page.component" 
+                       :class="{ active: currentPage === page.component }">
+                        {{ page.name }}
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        
+        <div class="page-content">
+            <component :is="currentPage"></component>
+        </div>
+    </div>
+
+    <!-- Page Komponenten laden -->
+    <script src="home.js"></script>
+    <script src="about.js"></script>
+    <script src="contact.js"></script>
+
+    <script>
+        window.onload = function() {
+            const { createApp, ref } = Vue;
+            
+            const app = createApp({
+                setup() {
+                    // Verfügbare Seiten
+                    const pages = [
+                        { name: 'Home', component: 'home-page' },
+                        { name: 'Über uns', component: 'about-page' },
+                        { name: 'Kontakt', component: 'contact-page' }
+                    ];
+                    
+                    // Aktuelle Seite
+                    const currentPage = ref('home-page');
+                    
+                    return {
+                        pages,
+                        currentPage
+                    };
+                }
+            });
+            
+            // Komponenten registrieren
+            app.component('home-page', HomePage);
+            app.component('about-page', AboutPage);
+            app.component('contact-page', ContactPage);
+            
+            app.mount('#app');
+        };
+    </script>
+</body>
+</html>

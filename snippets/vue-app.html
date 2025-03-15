@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerüst-Verwaltung</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .geruest {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+        .angemeldet {
+            border-left: 5px solid green;
+        }
+        .umgebaut {
+            border-left: 5px solid orange;
+        }
+        .abgemeldet {
+            border-left: 5px solid gray;
+        }
+        .filter-buttons {
+            margin-bottom: 20px;
+        }
+        button {
+            background-color: #4285F4;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            margin-right: 10px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #3367D6;
+        }
+        button.active {
+            background-color: #34A853;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <h1>Gerüst-Verwaltung</h1>
+        
+        <div class="filter-buttons">
+            <button 
+                @click="currentFilter = 'alle'"
+                :class="{ active: currentFilter === 'alle' }">
+                Alle anzeigen
+            </button>
+            <button 
+                @click="currentFilter = 'angemeldet'"
+                :class="{ active: currentFilter === 'angemeldet' }">
+                Angemeldet
+            </button>
+            <button 
+                @click="currentFilter = 'umgebaut'"
+                :class="{ active: currentFilter === 'umgebaut' }">
+                Umgebaut
+            </button>
+            <button 
+                @click="currentFilter = 'abgemeldet'"
+                :class="{ active: currentFilter === 'abgemeldet' }">
+                Abgemeldet
+            </button>
+        </div>
+        
+        <div v-for="geruest in filteredGerueste" :key="geruest.id" 
+             class="geruest" :class="geruest.status">
+            <h2>{{ geruest.id }}</h2>
+            <p><strong>Bereich:</strong> {{ geruest.bereich }}</p>
+            <p><strong>Status:</strong> {{ geruest.status }}</p>
+            <p><strong>Anmeldedatum:</strong> {{ formatDate(geruest.anmeldedatum) }}</p>
+        </div>
+        
+        <div v-if="filteredGerueste.length === 0">
+            <p>Keine Gerüste für den ausgewählten Filter gefunden.</p>
+        </div>
+    </div>
+
+    <!-- Vue.js von CDN laden - WICHTIG: Lade es vor deinem eigenen Script -->
+    <script src="https://unpkg.com/vue@3.2.47/dist/vue.global.js"></script>
+
+    <script>
+        // Warte auf das DOM und stelle sicher, dass Vue geladen ist
+        window.onload = function() {
+            if (typeof Vue === 'undefined') {
+                console.error('Vue konnte nicht geladen werden');
+                return;
+            }
+
+            const { createApp, ref, computed } = Vue;
+            
+            createApp({
+                setup() {
+                    // Gerüstdaten
+                    const gerueste = ref([
+                        {
+                            "id": "G001",
+                            "status": "angemeldet",
+                            "bereich": "Halle A",
+                            "anmeldedatum": "2024-02-15"
+                        },
+                        {
+                            "id": "G002",
+                            "status": "umgebaut",
+                            "bereich": "Halle B",
+                            "anmeldedatum": "2024-01-20"
+                        },
+                        {
+                            "id": "G003",
+                            "status": "abgemeldet",
+                            "bereich": "Außenbereich",
+                            "anmeldedatum": "2024-03-01"
+                        }
+                    ]);
+                    
+                    // Aktueller Filter
+                    const currentFilter = ref('alle');
+                    
+                    // Gefilterte Gerüste
+                    const filteredGerueste = computed(() => {
+                        if (currentFilter.value === 'alle') {
+                            return gerueste.value;
+                        }
+                        return gerueste.value.filter(g => g.status === currentFilter.value);
+                    });
+                    
+                    // Hilfsfunktion zum Formatieren des Datums
+                    const formatDate = (dateString) => {
+                        const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
+                        return new Date(dateString).toLocaleDateString('de-DE', options);
+                    };
+                    
+                    return {
+                        gerueste,
+                        currentFilter,
+                        filteredGerueste,
+                        formatDate
+                    };
+                }
+            }).mount('#app');
+        };
+    </script>
+</body>
+</html>
