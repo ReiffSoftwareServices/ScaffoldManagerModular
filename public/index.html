@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerüst-Verwaltung</title>
+    <script src="https://unpkg.com/vue@3.2.47/dist/vue.global.js"></script>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/scaffoldbook.css">
+</head>
+<body>
+    <!-- Login -->
+    <div id="auth-container">
+        <div id="login-form" style="display: block;">
+            <h2>Login</h2>
+            <div class="form-group">
+                <label for="email">E-Mail:</label>
+                <input type="email" id="email" placeholder="E-Mail-Adresse" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Passwort:</label>
+                <input type="password" id="password" placeholder="Passwort" required>
+            </div>
+            <button id="login-button">Anmelden</button>
+            <button id="register-button">Registrieren</button>
+        </div>
+        
+        <div id="user-info" style="display: none;">
+            <h2>Angemeldet als: <span id="user-email"></span></h2>
+            <button id="logout-button">Abmelden</button>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="app">
+        <nav>
+            <ul>
+                <li v-for="page in pages" :key="page.name">
+                    <a href="#" 
+                       @click.prevent="currentPage = page.component" 
+                       :class="{ active: currentPage === page.component }">
+                        {{ page.name }}
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        
+        <div class="page-content">
+            <component :is="currentPage"></component>
+        </div>
+    </div>
+    
+    <!-- Skripte in der richtigen Reihenfolge laden -->
+    
+    <!-- 1. Externe Bibliotheken -->
+    <script src="https://unpkg.com/vue@3.2.47/dist/vue.global.js"></script>
+    
+    <!-- 2. Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    
+    <!-- 3. Firebase-Konfiguration und Initialisierung -->
+    <script src="js/firebase.js"></script>
+    <script>
+        // Firebase initialisieren
+        firebase.initializeApp(firebaseConfig);
+        
+        // Globale Variablen für einfacheren Zugriff
+        window.db = firebase.firestore();
+        window.auth = firebase.auth();
+        window.storage = firebase.storage();
+    </script>
+    <script src="js/authentication.js"></script>
+    
+    <!-- 4. Unterkomponenten -->
+    <script src="Suppages/config subpages/items.js"></script>
+    
+    <!-- 5. Hauptkomponenten -->
+    <script src="Suppages/registration.js"></script>
+    <script src="Suppages/scaffoldbook.js"></script>
+    <script src="Suppages/configuration.js"></script>
+    
+    <!-- 6. Hauptanwendung initialisieren -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const { createApp, ref } = Vue;
+            
+            const app = createApp({
+                setup() {
+                    // Verfügbare Seiten
+                    const pages = [
+                        { name: 'Gerüstanmeldung', component: 'anmeldung-page' },
+                        { name: 'Gerüstbuch', component: 'geruestbuch-page' },
+                        { name: 'Stammdaten', component: 'stammdaten-page' }
+                    ];
+                    
+                    // Aktuelle Seite - standardmäßig Gerüstanmeldung anzeigen
+                    const currentPage = ref('anmeldung-page');
+                    
+                    return {
+                        pages,
+                        currentPage
+                    };
+                }
+            });
+            
+            // Komponenten registrieren
+            app.component('anmeldung-page', AnmeldungPage);
+            app.component('geruestbuch-page', GeruestbuchPage);
+            app.component('stammdaten-page', StammdatenPage);
+            
+            app.mount('#app');
+        });
+    </script>
+
+    <style>
+        /* Styling für den Benutzerinfo-Bereich */
+        #user-info {
+            display: none; /* Wird durch JS auf 'flex' gesetzt, wenn angemeldet */
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        #user-info h2 {
+            margin: 0;
+            font-size: 16px;
+        }
+        
+        #logout-button {
+            margin-left: 15px;
+        }
+    </style>
+</body>
+</html>

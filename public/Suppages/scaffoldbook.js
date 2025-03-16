@@ -33,10 +33,23 @@ const GeruestbuchPage = {
             <div v-else>
                 <div v-for="geruest in filteredGerueste" :key="geruest.id" 
                      class="geruest" :class="geruest.status">
+                    <!-- Lösch-Icon (Kreuz) oben rechts -->
+                    <div class="delete-icon" @click="deleteGeruest(geruest.docId)" title="Gerüst löschen">
+                        &#10006;
+                    </div>
+                    
                     <h2>{{ geruest.id }}</h2>
-                    <p><strong>Bereich:</strong> {{ geruest.bereich || 'Nicht angegeben' }}</p>
+                    <p><strong>Bereich:</strong> {{ geruest.area || 'Nicht angegeben' }}</p>
                     <p><strong>Status:</strong> {{ geruest.status }}</p>
                     <p><strong>Anmeldedatum:</strong> {{ formatDate(geruest.anmeldedatum) }}</p>
+                    
+                    <!-- Abmelde-Button, nur anzeigen wenn Status nicht "abgemeldet" ist -->
+                    <button 
+                        v-if="geruest.status !== 'abgemeldet'"
+                        @click="changeStatus(geruest.docId, 'abgemeldet')"
+                        class="action-button abmelden-button">
+                        Gerüst abmelden
+                    </button>
                 </div>
                 
                 <div v-if="filteredGerueste.length === 0">
@@ -83,6 +96,62 @@ const GeruestbuchPage = {
             }
         };
         
+        // Funktion zum Ändern des Status eines Gerüsts
+        const changeStatus = (docId, newStatus) => {
+            if (!docId) {
+                console.error('Keine Dokument-ID angegeben');
+                return;
+            }
+            
+            loading.value = true;
+            
+            // Firestore-Update
+            firebase.firestore().collection('gerueste').doc(docId)
+                .update({
+                    status: newStatus,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                })
+                .then(() => {
+                    console.log(`Status des Gerüsts ${docId} auf "${newStatus}" geändert`);
+                    // Daten neu laden, um die Änderungen anzuzeigen
+                    loadGerueste();
+                })
+                .catch((error) => {
+                    console.error('Fehler beim Ändern des Status:', error);
+                    loading.value = false;
+                    alert('Fehler beim Ändern des Status. Bitte versuchen Sie es erneut.');
+                });
+        };
+        
+        // Funktion zum Löschen eines Gerüsts
+        const deleteGeruest = (docId) => {
+            if (!docId) {
+                console.error('Keine Dokument-ID angegeben');
+                return;
+            }
+            
+            // Bestätigung vom Benutzer einholen
+            if (!confirm('Sind Sie sicher, dass Sie dieses Gerüst endgültig löschen möchten?')) {
+                return; // Abbrechen, wenn der Benutzer nicht bestätigt
+            }
+            
+            loading.value = true;
+            
+            // Firestore-Löschung
+            firebase.firestore().collection('gerueste').doc(docId)
+                .delete()
+                .then(() => {
+                    console.log(`Gerüst ${docId} wurde gelöscht`);
+                    // Daten neu laden, um die Änderungen anzuzeigen
+                    loadGerueste();
+                })
+                .catch((error) => {
+                    console.error('Fehler beim Löschen des Gerüsts:', error);
+                    loading.value = false;
+                    alert('Fehler beim Löschen des Gerüsts. Bitte versuchen Sie es erneut.');
+                });
+        };
+        
         // Daten aus Firestore laden
         const loadGerueste = () => {
             loading.value = true;
@@ -116,6 +185,37 @@ const GeruestbuchPage = {
         // Beim Mounten der Komponente Daten laden
         onMounted(() => {
             loadGerueste();
+            
+            // CSS für das Lösch-Icon hinzufügen
+            const style = document.createElement('style');
+            style.textContent = `
+                .geruest {
+                    position: relative;
+                }
+                .delete-icon {
+                    position: absolute;
+                    top: 10px;
+                    right: 10px;
+                    cursor: pointer;
+                    font-size: 18px;
+                    color: #ff4444;
+                    width: 24px;
+                    height: 24px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border-radius: 50%;
+                    background-color: white;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+                    transition: all 0.2s ease;
+                }
+                .delete-icon:hover {
+                    background-color: #ff4444;
+                    color: white;
+                    transform: scale(1.1);
+                }
+            `;
+            document.head.appendChild(style);
         });
         
         return {
@@ -123,7 +223,9 @@ const GeruestbuchPage = {
             loading,
             currentFilter,
             filteredGerueste,
-            formatDate
+            formatDate,
+            changeStatus,
+            deleteGeruest
         };
     }
 };
